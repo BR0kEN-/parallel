@@ -29,16 +29,6 @@ function parallel_css_alter(array &$css) {
 }
 
 /**
- * Implements hook_page_alter().
- */
-function parallel_page_alter(array &$page) {
-  $page['page_top']['parallel']['#attached']['js'][] = [
-    'type' => 'external',
-    'data' => '//html5shiv.googlecode.com/svn/trunk/html5.js',
-  ];
-}
-
-/**
  * Implements template_preprocess_views_view().
  */
 function parallel_preprocess_views_view(array &$variables) {

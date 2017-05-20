@@ -1,5 +1,12 @@
 .*
 
+# Vendor plugins.
+node_modules/
+
+# Generated assets.
+css/
+js/
+
 # Git stuff.
 !.git*
 
@@ -15,7 +22,6 @@
 # Custom plugins.
 !.gulp/
 
-# Vendor plugins.
-node_modules/
-css/
-js/
+# Source code.
+!sources/scss/
+!sources/js/
