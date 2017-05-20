@@ -1,0 +1,21 @@
+.*
+
+# Git stuff.
+!.git*
+
+# Configurations.
+!.babelrc
+!.bowerrc
+!.eslintrc
+!.js-config.yml
+!.scss-lint.yml
+!.scss-config.yml
+!.autoprefixer-config.yml
+
+# Custom plugins.
+!.gulp/
+
+# Vendor plugins.
+node_modules/
+css/
+js/

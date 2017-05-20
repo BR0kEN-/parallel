@@ -1,0 +1,193 @@
+// =============================================================================
+// Functions
+
+// Combine two lists into map.
+//
+// Result of:
+//   combine((test), (12px));
+// will be the next:
+//  (test: 12px)
+@function combine($list1, $list2) {
+  $length1: length($list1);
+  $length2: length($list2);
+  $map: ();
+
+  @if $length1 == $length2 or $length2 > $length1 {
+    @for $i from 1 through $length1 {
+      $map: map-merge($map, (nth($list1, $i): nth($list2, $i)));
+    }
+  }
+
+  @return $map;
+}
+
+@function font-weight($weight) {
+  @if variable-exists(font-weights) {
+    @return map-get($font-weights, $weight);
+  }
+
+  @return $weight;
+}
+
+@function get-dimension($key) {
+  @if variable-exists(dimensions) {
+    @if map-has-key($dimensions, $key) {
+      @return map-get($dimensions, $key);
+    }
+    @else {
+      @error 'Undefined index "' + $key + '" in "$dimensions" map.';
+    }
+  }
+  @else {
+    @error 'Function "get-dimension" requires the "$dimensions" variable that is undefined.';
+  }
+}
+
+@function calc-vertical-position($parent-height, $child-height) {
+  @return (get-dimension($parent-height) - get-dimension($child-height)) / 2;
+}
+
+// =============================================================================
+// Breakpoints
+
+// CSS3 Media Queries
+//
+// Result of:
+//   @include breakpoint((from: 1024px, to: 1360px)) {
+//     body {
+//       background: red;
+//     }
+//   }
+// will be the next:
+//   @media (max-width: 1360px) and (min-width: 1024px) {
+//     body {
+//       background: red;
+//     }
+//   }
+//
+// Also, you can define the breakpoints with human-readable names in
+// single "$breakpoints" variable and use an object keys as value of
+// some breakpoint.
+//
+// Result of:
+//   $breakpoints: (
+//     first: 1360px,
+//     second: 1024px,
+//   );
+//
+//   @include breakpoint((from: second, to: first)) {
+//     body {
+//       background: red;
+//     }
+//   }
+// will be the same as in first example.
+@mixin breakpoint($map) {
+  $directions: (from: min, to: max);
+  $query: '';
+
+  @each $direction, $breakpoint in $map {
+    @if map-has-key($directions, $direction) {
+      @if $query != '' {
+        $query: $query + ') and (';
+      }
+
+      @if variable-exists(breakpoints) and map-has-key($breakpoints, $breakpoint) {
+        $breakpoint: map-get($breakpoints, $breakpoint);
+      }
+
+      $query: $query + map-get($directions, $direction) + '-width: ' + $breakpoint;
+    }
+  }
+
+  @if $query != '' {
+    @media #{'(' + $query + ')'} {
+      @content;
+    }
+  }
+}
+
+// =============================================================================
+// Fonts
+
+// Including fonts.
+// The font must be placed in: ../fonts/NAME/TRACING/TRACING.[eot|woff|ttf|svg]
+//
+// @example:
+//   @include font-face(Helvetica, thin);
+@mixin font-face($name, $weight, $style: normal) {
+  $url: '../fonts/' + $name + '/' + $weight + '/' + $weight;
+
+  @font-face {
+    font-style: $style;
+    font-family: $name;
+    font-weight: font-weight($weight);
+    src: url($url + '.eot');
+    src: url($url + '.eot?#' + $name) format('embedded-opentype'),
+         url($url + '.woff') format('woff'),
+         url($url + '.ttf') format('truetype'),
+         url($url + '.svg#' + $name) format('svg');
+  }
+}
+
+// Group for most useful font rules: "font-size", "line-height" and "font-weight";
+//
+// Second argument of this mixin processed for "font-weight" value.
+//
+// @see
+//   $font-weights
+//
+// @example:
+//   @include font(12px, bold);
+//   @include font(12px, 30px, thin);
+//   @include font(12px, 700);
+@mixin font($size, $line-height: false, $weight: false) {
+  font-size: $size;
+
+  // Try to get a value from "font-weights" map.
+  $possible-weight: font-weight($line-height);
+
+  @if $possible-weight == null {
+    // Check for one of defaults value.
+    $defaults: bold, bolder, lighter, normal;
+    $index: index($defaults, $line-height);
+
+    @if $index != null {
+      $possible-weight: nth($defaults, $index);
+    }
+  }
+
+  @if $possible-weight != null {
+    $line-height: false;
+    font-weight: $possible-weight;
+  }
+  @elseif $weight != false {
+    $value: font-weight($weight);
+
+    @if $value == null {
+      $value: $weight;
+    }
+
+    font-weight: $value;
+  }
+
+  @if $line-height != false {
+    line-height: $line-height;
+  }
+}
+
+// =============================================================================
+// Custom
+
+@mixin full-width($position: absolute) {
+  position: $position;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+@mixin same($value, $properties...) {
+  @each $property in $properties {
+    #{$property}: $value;
+  }
+}
